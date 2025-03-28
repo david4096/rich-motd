@@ -1,5 +1,7 @@
 # MOTD Generator
 
+[💻Use it now!](david4096.github.io/rich-motd/)
+
 This simple web app allows you to create a customized Message of the Day (MOTD) with ANSI color codes. You can easily apply colors, preview them live, and copy the raw ANSI code to use in a Unix terminal.
 
 ## Features
