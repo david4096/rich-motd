@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MOTD Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px;
+        }
+        textarea {
+            width: 100%;
+            max-width: 150ch;
+            height: 100px;
+            margin-bottom: 10px;
+            font-family: monospace;
+        }
+        select, button {
+            margin: 5px;
+        }
+        .motd-preview, .motd-raw {
+            white-space: pre-wrap;
+            font-family: monospace;
+            background-color: black;
+            color: white;
+            padding: 10px;
+            width: 100%;
+            max-width: 150ch;
+            min-height: 100px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+        .motd-raw {
+            background-color: #222;
+        }
+        .color-option {
+            display: flex;
+            align-items: center;
+        }
+        .color-preview {
+            width: 20px;
+            height: 20px;
+            margin-right: 5px;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <h1>MOTD Generator</h1>
+    <textarea id="motdInput" placeholder="Enter MOTD text..." oninput="updatePreview()"></textarea>
+    <div id="lineLengths"></div>
+    <select id="colorSelect">
+        <option value="30" style="background-color:black;color:white;">Black</option>
+        <option value="31" style="background-color:red;color:white;">Red</option>
+        <option value="32" style="background-color:green;color:white;">Green</option>
+        <option value="33" style="background-color:yellow;color:black;">Yellow</option>
+        <option value="34" style="background-color:blue;color:white;">Blue</option>
+        <option value="35" style="background-color:magenta;color:white;">Magenta</option>
+        <option value="36" style="background-color:cyan;color:black;">Cyan</option>
+        <option value="37" style="background-color:white;color:black;">White</option>
+        <option value="90" style="background-color:gray;color:white;">Bright Black</option>
+        <option value="91" style="background-color:lightcoral;color:white;">Bright Red</option>
+        <option value="92" style="background-color:lightgreen;color:black;">Bright Green</option>
+        <option value="93" style="background-color:lightyellow;color:black;">Bright Yellow</option>
+        <option value="94" style="background-color:lightblue;color:white;">Bright Blue</option>
+        <option value="95" style="background-color:violet;color:white;">Bright Magenta</option>
+        <option value="96" style="background-color:lightcyan;color:black;">Bright Cyan</option>
+        <option value="97" style="background-color:white;color:black;">Bright White</option>
+    </select>
+    <button onclick="applyColor()">Apply Color</button>
+    <button onclick="copyToClipboard()">Copy MOTD</button>
+    <h3>Live Preview:</h3>
+    <div id="motdPreview" class="motd-preview"></div>
+    <h3>Raw ANSI Output:</h3>
+    <div id="motdRaw" class="motd-raw"></div>
+    
+    <script>
+        function updatePreview() {
+            const text = document.getElementById("motdInput").value;
+            const lines = text.split("\n");
+            document.getElementById("lineLengths").innerHTML = lines.map(line => `<p>${line} <span style='color: gray'>(${line.length})</span></p>`).join('');
+            
+            document.getElementById("motdRaw").textContent = text;
+            
+            const colorMap = {
+                "30": "black", "31": "red", "32": "green", "33": "yellow",
+                "34": "blue", "35": "magenta", "36": "cyan", "37": "white",
+                "90": "gray", "91": "lightcoral", "92": "lightgreen", "93": "lightyellow",
+                "94": "lightblue", "95": "violet", "96": "lightcyan", "97": "white"
+            };
+            const coloredText = text.replace(/\x1b\[([0-9]+)m/g, (match, p1) => {
+                return `<span style='color:${colorMap[p1] || "white"}'>`;
+            }).replace(/\x1b\[0m/g, "</span>");
+            document.getElementById("motdPreview").innerHTML = coloredText;
+        }
+
+        function applyColor() {
+            const input = document.getElementById("motdInput");
+            const start = input.selectionStart;
+            const end = input.selectionEnd;
+            if (start === end) return;
+            
+            const selectionText = input.value.substring(start, end);
+            const colorCode = document.getElementById("colorSelect").value;
+            const ansiColor = `\x1b[${colorCode}m`;
+            const ansiReset = "\x1b[0m";
+            
+            const before = input.value.substring(0, start);
+            const after = input.value.substring(end);
+            input.value = before + ansiColor + selectionText + ansiReset + after;
+            
+            updatePreview();
+        }
+
+        function copyToClipboard() {
+            const text = document.getElementById("motdRaw").textContent;
+            navigator.clipboard.writeText(text).then(() => alert("MOTD copied to clipboard!"));
+        }
+    </script>
+</body>
+</html>
